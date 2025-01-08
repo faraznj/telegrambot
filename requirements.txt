@@ -1,0 +1,5 @@
+Flask
+PyMuPDF
+Pillow
+pytesseract
+opencv-python-headless
