@@ -1,5 +1,4 @@
-import os
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import fitz
 from PIL import Image
 import pytesseract
@@ -11,19 +10,25 @@ def home():
     return "ربات تلگرام فعال است!"
 
 @app.route('/upload', methods=['POST'])
-def upload_pdf():
-    pdf_file = request.files['file']
-    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    full_text = ''
+def handle_update():
+    data = request.get_json()
+    if not data or "message" not in data:
+        return jsonify({"status": "no message"}), 400  # پاسخ 400 در صورت نبود پیام
 
-    for page in doc:
-        pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        text = pytesseract.image_to_string(img, lang='fas+ara')
-        full_text += text + '\n'  # از \\n به \n تغییر یافت
+    chat_id = data["message"]["chat"]["id"]
+    text = data["message"].get("text", "بدون متن")
+    
+    # ارسال پاسخ به کاربر
+    send_message(chat_id, f"متن دریافت شد: {text}")
+    return jsonify({"status": "ok"}), 200
 
-    return {"text": full_text}
+def send_message(chat_id, text):
+    import requests
+    TOKEN = "توکن جدید شما"
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    requests.post(url, json=payload)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # دریافت پورت از متغیر محیطی PORT
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
