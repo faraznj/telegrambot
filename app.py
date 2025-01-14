@@ -13,7 +13,8 @@ def home():
 @app.route('/upload', methods=['POST'])
 def handle_update():
     try:
-        # دریافت داده‌ها به فرمت JSON
+        # چاپ هدرها و داده‌ها برای بررسی
+        print("Headers:", request.headers)  # چاپ هدرهای درخواست
         data = request.get_json()
         print("Received data:", data)  # چاپ داده‌ها برای بررسی
 
@@ -41,5 +42,3 @@ def send_message(chat_id, text):
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # پورت را از محیط دریافت می‌کند
     app.run(host='0.0.0.0', port=port)
-
-
