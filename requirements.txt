@@ -1,6 +1,5 @@
-requests
-Flask
+PyMuPDF
 pytesseract
+flask
+requests
 Pillow
-fitz
-
