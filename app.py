@@ -8,7 +8,7 @@ TOKEN = "توکن جدید شما"
 
 @app.route('/')
 def home():
-    return "ربات تلگرام فعال است!"
+    return "ربات تلگرام فعال ssssاست!"
 
 @app.route('/upload', methods=['POST'])
 def handle_update():
