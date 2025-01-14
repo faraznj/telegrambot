@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request
 import fitz
 from PIL import Image
@@ -19,9 +20,10 @@ def upload_pdf():
         pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         text = pytesseract.image_to_string(img, lang='fas+ara')
-        full_text += text + '\\n'
+        full_text += text + '\n'  # از \\n به \n تغییر یافت
 
     return {"text": full_text}
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))  # دریافت پورت از متغیر محیطی PORT
+    app.run(host='0.0.0.0', port=port)
