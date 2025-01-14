@@ -1,5 +1,5 @@
+requests
 Flask
-PyMuPDF
-Pillow
 pytesseract
-opencv-python-headless
+Pillow
+fitz
