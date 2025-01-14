@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-TOKEN = "توکن جدید شما"  # توکن جدید بات خود را وارد کنید
+TOKEN = "7869566708:AAHi0MbRRoMgwIsI-ekKvQOAAlc1qkGvomk"  
 
 @app.route('/')
 def home():
