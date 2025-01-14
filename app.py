@@ -1,44 +1,31 @@
 from flask import Flask, request, jsonify
-import requests
-import os
+import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
 
 app = Flask(__name__)
-
-TOKEN = "7869566708:AAHi0MbRRoMgwIsI-ekKvQOAAlc1qkGvomk"  
 
 @app.route('/')
 def home():
     return "ربات تلگرام فعال است!"
 
 @app.route('/upload', methods=['POST'])
-def handle_update():
-    try:
-        # چاپ هدرها و داده‌ها برای بررسی
-        print("Headers:", request.headers)  # چاپ هدرهای درخواست
-        data = request.get_json()
-        print("Received data:", data)  # چاپ داده‌ها برای بررسی
+def upload_pdf():
+    pdf_file = request.files['file']
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    full_text = ''
+    
+    # پردازش هر صفحه از PDF
+    for page_num, page in enumerate(doc):
+        print(f"Processing page {page_num + 1}")  # برای لاگ گرفتن
+        pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0))  # تبدیل صفحه به تصویر با کیفیت بالاتر
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)  # تبدیل پیکسل‌ها به تصویر
 
-        # بررسی اینکه آیا پیام معتبر است
-        if not data or "message" not in data:
-            print("Invalid data received:", data)  # نمایش داده‌های نادرست
-            return jsonify({"status": "no valid message"}), 400
+        # انجام OCR روی تصویر
+        text = pytesseract.image_to_string(img, lang='fas+ara')  # زبان فارسی و عربی
+        full_text += text + '\n'  # افزودن متن استخراج‌شده به متن کلی
 
-        chat_id = data["message"]["chat"]["id"]
-        text = data["message"].get("text", "بدون متن")
-
-        # ارسال پاسخ به کاربر
-        send_message(chat_id, f"پیام شما دریافت شد: {text}")
-        return jsonify({"status": "ok"}), 200
-
-    except Exception as e:
-        print(f"Error processing the request: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-def send_message(chat_id, text):
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    payload = {"chat_id": chat_id, "text": text}
-    requests.post(url, json=payload)
+    return jsonify({"text": full_text})  # ارسال متن استخراج‌شده به عنوان پاسخ
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # پورت را از محیط دریافت می‌کند
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
